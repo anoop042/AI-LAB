@@ -1,0 +1,90 @@
+def print_board(state):
+    """Prints the 4x4 board representation with 'Q' and '.'."""
+    n = len(state)
+    for row in range(n):
+        for col in range(n):
+            if state[col] == row:
+                print("Q", end=" ")
+            else:
+                print(".", end=" ")
+        print()
+    print()
+
+
+def calculate_cost(state):
+   
+    cost = 0
+    n = len(state)
+    for i in range(n):
+        for j in range(i + 1, n):
+            # same row
+            if state[i] == state[j]:
+                cost += 1
+            # same diagonal
+            elif abs(state[i] - state[j]) == abs(i - j):
+                cost += 1
+    return cost
+
+
+def get_neighbors(state):
+   
+    neighbors = []
+    n = len(state)
+    for i in range(n):
+        for j in range(i + 1, n):
+            neighbor = state.copy()
+            neighbor[i], neighbor[j] = neighbor[j], neighbor[i]
+            neighbors.append((neighbor, (i, j)))
+    return neighbors
+
+
+def hill_climbing(state):
+    print("\nInitial State:", state)
+    print_board(state)
+    current_cost = calculate_cost(state)
+    step = 1
+
+    while True:
+        print(f"Step {step}: Current cost = {current_cost}")
+        neighbors = get_neighbors(state)
+        neighbor_costs = []
+
+        # Calculate cost for all neighbors
+        for neighbor, swapped in neighbors:
+            cost = calculate_cost(neighbor)
+            neighbor_costs.append((cost, neighbor, swapped))
+
+        # Sort by cost and then by smallest column pair
+        neighbor_costs.sort(key=lambda x: (x[0], x[2][0], x[2][1]))
+
+        # Display neighbor costs
+        print("Neighbor states and their costs:")
+        for cost, neighbor, swapped in neighbor_costs:
+            print(f"Swap x{swapped[0]} & x{swapped[1]} => {neighbor}, Cost = {cost}")
+
+        best_cost, best_state, swap = neighbor_costs[0]
+        print("\nBest Neighbor after swap", swap, "is", best_state, "with cost =", best_cost)
+        print_board(best_state)
+
+        if best_cost >= current_cost:  # No improvement (local minimum)
+            print("No better neighbor found. Hill Climbing terminated.")
+            print("Final state:", state)
+            print_board(state)
+            break
+        else:
+            state = best_state
+            current_cost = best_cost
+
+        if current_cost == 0:
+            print("Goal state reached!")
+            print_board(state)
+            break
+
+        step += 1
+
+
+if __name__ == "__main__":
+    print("Hill Climbing for 4-Queens Problem")
+    print("Enter the row positions of 4 queens (each between 0 and 3):")
+    state = list(map(int, input("Example (1 2 0 3): ").split()))
+    hill_climbing(state)
